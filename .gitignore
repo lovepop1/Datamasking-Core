@@ -1,0 +1,33 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+src/*.egg-info/
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+

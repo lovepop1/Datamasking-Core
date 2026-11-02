@@ -1,0 +1,34 @@
+name: Bug Report
+description: Report a defect in policy validation, selector evaluation, format parsing, or masking behavior.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Concise description of what went wrong versus what the policy specified.
+    validations:
+      required: true
+  - type: textarea
+    id: policy
+    attributes:
+      label: Minimal Policy YAML
+      description: Paste a minimal policy reproducing the issue (never include real PII/PHI).
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: payload
+    attributes:
+      label: Synthetic Sample Payload
+      description: Synthetic input data (JSON, XML, YAML, or CSV) that triggers the bug.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Python 3.12, datamasking-core 0.1.0, Ubuntu 24.04"
+    validations:
+      required: true
+

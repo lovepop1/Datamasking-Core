@@ -1,0 +1,14 @@
+version: "1.0"
+name: "longitudinal-date-shift"
+format: "json"
+
+rules:
+  - selector: "$.encounters[*].admitted_on"
+    technique: "date_shift"
+    params:
+      days: -14
+  - selector: "$.encounters[*].discharged_on"
+    technique: "date_shift"
+    params:
+      days: -14
+

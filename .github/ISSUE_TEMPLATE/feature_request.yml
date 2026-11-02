@@ -1,0 +1,19 @@
+name: Feature Request
+description: Propose a new masking technique, format adapter, hierarchy, or policy capability.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use Case
+      description: What masking or privacy requirement are you solving?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Design
+      description: Should this live in core or as a plugin (`@register_technique` / `@register_adapter` / `@register_hierarchy`)? Show expected policy YAML if applicable.
+    validations:
+      required: true
+

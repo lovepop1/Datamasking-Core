@@ -1,0 +1,26 @@
+{
+  "export_id": "EXP-2026-0042",
+  "patients": [
+    {
+      "patient_id": "MRN-9001",
+      "name": "Alice Carter",
+      "ssn": "123-45-6789",
+      "phone": "+1-415-555-0142",
+      "dob": "1984-06-19",
+      "zipcode": "94107",
+      "age": 41,
+      "diagnosis_code": "J45.909"
+    },
+    {
+      "patient_id": "MRN-9002",
+      "name": "Brian Brooks",
+      "ssn": "987-65-4321",
+      "phone": "+1-415-555-0198",
+      "dob": "1981-11-03",
+      "zipcode": "94109",
+      "age": 44,
+      "diagnosis_code": "I10"
+    }
+  ]
+}
+

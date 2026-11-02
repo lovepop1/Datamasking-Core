@@ -1,0 +1,503 @@
+{
+  "$defs": {
+    "KAnonConfig": {
+      "additionalProperties": false,
+      "description": "Configuration for record-level k-anonymity verification or enforcement.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Whether k-anonymity processing is active.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "k": {
+          "description": "Minimum required equivalence class size (must be >= 2).",
+          "minimum": 2,
+          "title": "K",
+          "type": "integer"
+        },
+        "quasi_identifiers": {
+          "description": "Quasi-identifier selectors (strings or {selector, hierarchy, max_level} mappings).",
+          "items": {
+            "$ref": "#/$defs/QuasiIdentifier"
+          },
+          "minItems": 1,
+          "title": "Quasi Identifiers",
+          "type": "array"
+        },
+        "strategy": {
+          "default": "verify",
+          "description": "'verify' reports equivalence class violations without modifying data; 'enforce' generalizes quasi-identifiers via their hierarchies; 'suppress' removes records belonging to equivalence classes smaller than k.",
+          "enum": [
+            "verify",
+            "enforce",
+            "suppress"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
+        "on_unresolved": {
+          "default": "flag",
+          "description": "When strategy='enforce' cannot reach k using generalization alone: 'flag' keeps records intact and sets k_achieved=False; 'suppress' removes remaining outlier records.",
+          "enum": [
+            "flag",
+            "suppress"
+          ],
+          "title": "On Unresolved",
+          "type": "string"
+        }
+      },
+      "required": [
+        "k",
+        "quasi_identifiers"
+      ],
+      "title": "KAnonConfig",
+      "type": "object"
+    },
+    "MaskingProfile": {
+      "additionalProperties": false,
+      "description": "Named, reusable bundle of masking rules referenced by subtree scopes.",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional profile description.",
+          "title": "Description"
+        },
+        "rules": {
+          "description": "Rules activated inside scopes that apply this profile.",
+          "items": {
+            "$ref": "#/$defs/MaskingRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "title": "MaskingProfile",
+      "type": "object"
+    },
+    "MaskingRule": {
+      "additionalProperties": true,
+      "description": "A single declarative rule mapping a path selector to a masking technique.\n\nTechnique parameters can be supplied either under the ``params`` mapping or\ninline at the rule level for concise YAML authoring; inline keys outside the\nreserved rule attributes are normalized into ``params`` prior to strict\nvalidation against the target technique's parameter schema.",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional stable identifier for audit and conflict logs.",
+          "title": "Id"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional human-readable explanation of why this rule exists.",
+          "title": "Description"
+        },
+        "selector": {
+          "description": "JSONPath (JSON/YAML/CSV) or XPath (XML) expression selecting target nodes.",
+          "minLength": 1,
+          "title": "Selector",
+          "type": "string"
+        },
+        "technique": {
+          "description": "Registered technique identifier (e.g. 'redact', 'pseudonymize', 'suppress').",
+          "minLength": 1,
+          "title": "Technique",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "description": "Validated parameters passed to the technique.",
+          "title": "Params",
+          "type": "object"
+        },
+        "priority": {
+          "default": 0,
+          "description": "Explicit precedence override; higher priority wins before selector specificity.",
+          "title": "Priority",
+          "type": "integer"
+        },
+        "roles": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional list of caller roles to which this rule applies; applies to all roles when omitted.",
+          "title": "Roles"
+        },
+        "on_error": {
+          "anyOf": [
+            {
+              "enum": [
+                "raise",
+                "preserve",
+                "redact",
+                "nullify"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional per-rule override for incompatible values ('raise', 'preserve', 'redact', 'nullify').",
+          "title": "On Error"
+        }
+      },
+      "required": [
+        "selector",
+        "technique"
+      ],
+      "title": "MaskingRule",
+      "type": "object"
+    },
+    "QuasiIdentifier": {
+      "additionalProperties": false,
+      "description": "Quasi-identifier attribute specification for k-anonymity evaluation and enforcement.",
+      "properties": {
+        "selector": {
+          "description": "Selector evaluated relative to each record returned by policy.record_root.",
+          "minLength": 1,
+          "title": "Selector",
+          "type": "string"
+        },
+        "hierarchy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional registered hierarchy used to generalize values when strategy='enforce'.",
+          "title": "Hierarchy"
+        },
+        "max_level": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional maximum generalization level cap for this quasi-identifier.",
+          "title": "Max Level"
+        }
+      },
+      "required": [
+        "selector"
+      ],
+      "title": "QuasiIdentifier",
+      "type": "object"
+    },
+    "RoleDefinition": {
+      "additionalProperties": false,
+      "description": "Policy-defined caller role behavior.",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional role description.",
+          "title": "Description"
+        },
+        "passthrough": {
+          "default": false,
+          "description": "When true, callers with this role bypass masking and receive the original document.",
+          "title": "Passthrough",
+          "type": "boolean"
+        },
+        "default_scope_strategy": {
+          "anyOf": [
+            {
+              "enum": [
+                "masked",
+                "passthrough",
+                "drop_subtree",
+                "deep_redact",
+                "synthesize"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Fallback strategy used in scopes that omit both this role and 'default'.",
+          "title": "Default Scope Strategy"
+        }
+      },
+      "title": "RoleDefinition",
+      "type": "object"
+    },
+    "RoleStrategy": {
+      "additionalProperties": false,
+      "description": "How a specific role is handled inside a :class:`ScopeRule`.",
+      "properties": {
+        "strategy": {
+          "default": "masked",
+          "description": "Subtree handling strategy ('masked', 'passthrough', 'drop_subtree', 'deep_redact', 'synthesize').",
+          "enum": [
+            "masked",
+            "passthrough",
+            "drop_subtree",
+            "deep_redact",
+            "synthesize"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional profile from policy.profiles overriding scope.apply_profile when strategy='masked'.",
+          "title": "Profile"
+        },
+        "params": {
+          "additionalProperties": true,
+          "description": "Optional technique parameters when strategy is 'deep_redact' or 'synthesize'.",
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "title": "RoleStrategy",
+      "type": "object"
+    },
+    "ScopeRule": {
+      "additionalProperties": false,
+      "description": "Path-bounded subtree governance rule.",
+      "properties": {
+        "path": {
+          "description": "Selector identifying the subtree root node(s) governed by this scope.",
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "apply_profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default profile from policy.profiles applied when strategy='masked'.",
+          "title": "Apply Profile"
+        },
+        "roles": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RoleStrategy"
+          },
+          "description": "Role-specific strategy mapping (use key 'default' to match unlisted roles).",
+          "title": "Roles",
+          "type": "object"
+        },
+        "rules": {
+          "description": "Inline rules restricted to nodes inside this subtree when strategy='masked'.",
+          "items": {
+            "$ref": "#/$defs/MaskingRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "ScopeRule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Root declarative masking policy specification.\n\n``MaskingPolicy`` is the sole source of truth for what gets masked and how:\n\n- Fields not matched by any active rule or scope default to\n  ``unmatched_fields='preserve'`` (left completely untouched).\n- Type/domain mismatches default to ``on_error='raise'`` (never silently\n  overwritten with ``[REDACTED]`` unless explicitly configured).\n- Caller roles have no built-in magic names; role behavior is governed\n  exclusively by ``roles``, ``rules[*].roles``, and ``scopes[*].roles``.",
+  "properties": {
+    "version": {
+      "default": "1.0",
+      "description": "Policy schema version ('1.0'; '3.0' also accepted for compatibility).",
+      "title": "Version",
+      "type": "string"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional human-readable policy name.",
+      "title": "Name"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional summary of the policy's purpose and compliance scope.",
+      "title": "Description"
+    },
+    "format": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional target payload format ('json', 'xml', 'yaml', 'csv'). Enables load-time selector validation.",
+      "title": "Format"
+    },
+    "unmatched_fields": {
+      "default": "preserve",
+      "description": "Action applied to scalar leaf fields not matched by any active rule ('preserve', 'redact', 'nullify', 'suppress').",
+      "enum": [
+        "preserve",
+        "redact",
+        "nullify",
+        "suppress"
+      ],
+      "title": "Unmatched Fields",
+      "type": "string"
+    },
+    "unmatched_replacement": {
+      "default": "[REDACTED]",
+      "description": "Replacement string used only when unmatched_fields='redact'.",
+      "title": "Unmatched Replacement",
+      "type": "string"
+    },
+    "on_error": {
+      "default": "raise",
+      "description": "Default error policy when a technique encounters an incompatible value ('raise', 'preserve', 'redact', 'nullify').",
+      "enum": [
+        "raise",
+        "preserve",
+        "redact",
+        "nullify"
+      ],
+      "title": "On Error",
+      "type": "string"
+    },
+    "record_root": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ],
+      "default": "$",
+      "description": "Selector(s) identifying individual subject records for k-anonymity evaluation (e.g. '$.patients[*]' or '//patient').",
+      "title": "Record Root"
+    },
+    "rules": {
+      "description": "Global masking rules evaluated across the document.",
+      "items": {
+        "$ref": "#/$defs/MaskingRule"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "roles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RoleDefinition"
+      },
+      "description": "Optional user-defined caller roles and their policy defaults.",
+      "title": "Roles",
+      "type": "object"
+    },
+    "profiles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MaskingProfile"
+      },
+      "description": "Named reusable rule bundles referenced by scopes.",
+      "title": "Profiles",
+      "type": "object"
+    },
+    "scopes": {
+      "description": "Subtree-level governance rules and role strategies.",
+      "items": {
+        "$ref": "#/$defs/ScopeRule"
+      },
+      "title": "Scopes",
+      "type": "array"
+    },
+    "k_anonymity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KAnonConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional k-anonymity verification or enforcement settings."
+    }
+  },
+  "title": "DataMasking Policy Specification",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

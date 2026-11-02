@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../../schema/policy.schema.json
+version: "1.0"
+name: "clinical-research-export"
+description: "De-identify patient intake records while keeping analytical fields untouched."
+format: "json"
+unmatched_fields: "preserve"
+on_error: "raise"
+record_root: "$.patients[*]"
+
+rules:
+  - id: "drop-ssn"
+    selector: "$.patients[*].ssn"
+    technique: "suppress"
+
+  - id: "pseudonymize-patient-id"
+    selector: "$.patients[*].patient_id"
+    technique: "pseudonymize"
+    params:
+      prefix: "PT_"
+      token_length: 12
+
+  - id: "redact-full-name"
+    selector: "$.patients[*].name"
+    technique: "redact"
+    params:
+      replacement: "[REDACTED]"
+
+  - id: "mask-phone-last4"
+    selector: "$.patients[*].phone"
+    technique: "mask_pattern"
+    params:
+      pattern: "***-***-{digits_last4}"
+
+  - id: "generalize-dob-year"
+    selector: "$.patients[*].dob"
+    technique: "generalize"
+    params:
+      hierarchy: "date"
+      level: 2
+
+k_anonymity:
+  k: 2
+  strategy: "enforce"
+  on_unresolved: "flag"
+  quasi_identifiers:
+    - selector: "$.zipcode"
+      hierarchy: "zipcode"
+    - selector: "$.age"
+      hierarchy: "age"
+
